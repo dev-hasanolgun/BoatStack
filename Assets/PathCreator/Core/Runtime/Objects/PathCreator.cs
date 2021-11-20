@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PathCreation {
+    [Serializable]
     public class PathCreator : MonoBehaviour {
 
         /// This class stores data for the path editor, and provides accessors to get the current vertex and bezier path.

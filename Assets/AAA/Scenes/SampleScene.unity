@@ -151,9 +151,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 143377163}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.111, y: 0.12, z: -0.123}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0.111, y: 0.322, z: -0.123}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 851499774}
   m_RootOrder: 0
@@ -230,10 +230,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 143377163}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c718e4951f1c803488ce887aaaac29d3, type: 3}
+  m_Script: {fileID: 11500000, guid: c7f41a86373146b4caece56f98ecd4c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Object: {fileID: 143377164}
+  Player: {fileID: 851499775}
+  HorizontalSpeed: 5
+  Offset: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -353,7 +355,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 851499773}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.378, y: 0, z: 0.152}
+  m_LocalPosition: {x: -2.194, y: 0, z: 0.185}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -373,8 +375,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da9ac6816696e3c4081aff99f5270126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Waypoints: []
-  Rotations: []
+  Child: {fileID: 143377168}
+  WaterSlideData:
+    LocalPoints: []
+    LocalTangents: []
+    Density: 0
+    Depth: 0
+    Width: 0
+  BoatAmount: 1
+  TargetIndex: 0
+  Speed: 1
   IsSliding: 0
 --- !u!1 &963194225
 GameObject:
@@ -722,10 +732,11 @@ MonoBehaviour:
   _levelName: 
   LevelDatabase: {fileID: 11400000, guid: b1782ae1e581edf46a04602409f59d57, type: 2}
   Density: 9
-  Depth: 0.18
-  Width: 0.5
+  Depth: 0.5
+  Width: 2
   CurrentObstacle: 0
-  Percentage: 100
+  Percentage: 55
+  WidthLevel: 0
 --- !u!4 &1506268206
 Transform:
   m_ObjectHideFlags: 0
@@ -757,25 +768,53 @@ MonoBehaviour:
     _bezierPath:
       points:
       - {x: -2, y: 0, z: 0}
-      - {x: -1, y: 0.5, z: 0}
-      - {x: 1, y: -0.5, z: 0}
+      - {x: -1, y: 0, z: 0.5}
+      - {x: 1, y: 0, z: -0.5}
       - {x: 2, y: 0, z: 0}
+      - {x: 2.8920896, y: 0, z: 0.44604477}
+      - {x: 3.1810617, y: 0, z: 0.89721054}
+      - {x: 3.4700341, y: 0, z: 1.3483763}
+      - {x: 4.356898, y: 0, z: 2.7330155}
+      - {x: 3.9496977, y: 0, z: 3.6846058}
+      - {x: 3.5424976, y: 0, z: 4.636196}
+      - {x: 2.7951941, y: 0, z: 6.382578}
+      - {x: 1.7402604, y: 0, z: 6.7613673}
+      - {x: 0.6853266, y: 0, z: 7.1401567}
+      - {x: -0.81672156, y: 0, z: 7.679489}
+      - {x: -1.5184715, y: 0, z: 6.7091045}
+      - {x: -2.206349, y: 0, z: 5.749083}
+      - {x: -2.9511821, y: 0, z: 4.7095723}
+      - {x: -3.276473, y: 0, z: 4.1576176}
+      - {x: -3.601764, y: 0, z: 3.6056623}
+      - {x: -4.224025, y: 0, z: 2.549807}
+      - {x: -3.9493906, y: 0, z: 1.8372943}
+      - {x: -3.677814, y: 0, z: 1.1402836}
+      - {x: -3.432035, y: 0, z: 0.5094835}
+      - {x: -3.3324006, y: 0, z: 0.18550959}
+      - {x: -3.2327662, y: 0, z: -0.13846433}
       isClosed: 0
-      space: 0
+      space: 2
       controlMode: 0
       autoControlLength: 0.3
       boundsUpToDate: 0
       bounds:
         m_Center: {x: 0, y: 0, z: 0}
-        m_Extent: {x: 0, y: 0, z: 0}
+        m_Extent: {x: 2, y: 0.14433756, z: 0}
       perAnchorNormalsAngle:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
       - 0
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
     vertexPathUpToDate: 1
     vertexPathMaxAngleError: 0
-    vertexPathMinVertexSpacing: 0.12
+    vertexPathMinVertexSpacing: 0.15
     showTransformTool: 0
     showPathBounds: 0
     showPerSegmentBounds: 0

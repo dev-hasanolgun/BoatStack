@@ -47,6 +47,11 @@ public class LevelManager : MonoBehaviour
     [Range(0f,100f)]
     public float Percentage;
     
+    [BoxGroup("Obstacle Settings")]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    [Range(0,2)]
+    public int WidthLevel;
+    
     private Mesh _waterSlideMesh;
     private WaterSlideData _slideData;
     private Vector3 _currentObstacle;
@@ -270,10 +275,29 @@ public class LevelManager : MonoBehaviour
         Gizmos.color = new Color(0f, 0f, 1f, 0.20f);
         Gizmos.DrawWireMesh(mesh);
 
-        _currentObstacle = Path.path.GetPointAtTime(Percentage/100f);
+        var pos = Path.path.GetPointAtTime(Percentage/100f);
+        var vec = Path.path.GetPointAtTime((Percentage + 1f) / 100f) - pos;
+        var nor = Vector3.up;
+        var cross = Vector3.Cross(vec.normalized, nor);
+        var vel = Mathf.SmoothStep(0, 1, 1 / 2f);
+        var dis = Width/4f;
+        
+        switch (WidthLevel)
+        {
+            case 0:
+                _currentObstacle = pos + cross * dis + Vector3.up * vel * Depth;
+                break;
+            case 1:
+                _currentObstacle = Path.path.GetPointAtTime(Percentage/100f);
+                break;
+            case 2:
+                _currentObstacle = pos - cross * dis + Vector3.up * vel * Depth;
+                break;
+        }
+        
         Gizmos.color = Color.magenta;
         Gizmos.DrawSphere(_currentObstacle,0.05f);
-
+        
         if (!_isCreatingNewLevel)
         {
             for (int i = 0; i < _obstacleList.Count; i++)

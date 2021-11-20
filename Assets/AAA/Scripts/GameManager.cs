@@ -13,8 +13,7 @@ public class GameManager : MonoBehaviour
     public void StartGame(int startLevel = 0) // Create the player and start the game from selected level.
     {
         CurrentLevel = startLevel;
-        Player.Waypoints = LevelDatabase.LevelDB[startLevel].SlideData.LocalPoints;
-        Player.Rotations = LevelDatabase.LevelDB[startLevel].SlideData.LocalTangents;
+        Player.WaterSlideData = LevelDatabase.LevelDB[startLevel].SlideData;
     }
 
     private void Awake()
