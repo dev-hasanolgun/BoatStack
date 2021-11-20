@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -54,16 +55,16 @@ public class Player : MonoBehaviour
         var obstacle = (Obstacle) message["obstacle"];
         BoatAmount -= obstacle.Damage;
     }
-    
+
     private void OnEnable()
     {
         EventManager.StartListening("OnLevelStart", StartSliding);
-        EventManager.StartListening("OnBlocked", StartSliding);
+        EventManager.StartListening("OnBlocked", TakeDamage);
     }
 
     private void OnDisable()
     {
         EventManager.StopListening("OnLevelStart", StartSliding);
-        EventManager.StopListening("OnBlocked", StartSliding);
+        EventManager.StopListening("OnBlocked", TakeDamage);
     }
 }

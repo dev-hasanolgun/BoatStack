@@ -8,7 +8,7 @@ public class Level
 {
     public WaterSlideData SlideData;
     public BezierPath BezierPath;
-    public List<Vector3> ObstacleList = new List<Vector3>();
+    public List<ObstacleData> ObstacleDataList = new List<ObstacleData>();
     public int LevelID;
     public string LevelName;
 

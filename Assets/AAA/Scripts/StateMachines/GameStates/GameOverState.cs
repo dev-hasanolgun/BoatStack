@@ -1,5 +1,3 @@
-using UnityEngine.SceneManagement;
-
 public class GameOverState : IState<GameStateMachine>
 {
     private GameStateMachine _stateMachine;
@@ -14,8 +12,7 @@ public class GameOverState : IState<GameStateMachine>
 
     public void OnStateEnter()
     {
-        SceneManager.LoadScene("GameOverScene");
-        _stateMachine.SetState(new MenuState(_stateMachine));
+        _stateMachine.SetState(new TutorialState(_stateMachine));
     }
 
     public void OnStateExit()

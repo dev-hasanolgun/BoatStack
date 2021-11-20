@@ -52,10 +52,15 @@ public class LevelManager : MonoBehaviour
     [Range(0,2)]
     public int WidthLevel;
     
+    [BoxGroup("Obstacle Settings")]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    public Obstacle Obstacle;
+    
     private Mesh _waterSlideMesh;
     private WaterSlideData _slideData;
-    private Vector3 _currentObstacle;
-    private List<Vector3> _obstacleList = new List<Vector3>();
+    private Vector3 _currentObstaclePos;
+    private Quaternion _currentObstacleRot;
+    private List<Vector3> _obstaclePosList = new List<Vector3>();
     private bool _isLevelExist;
     private bool _isObstacleExist;
     private bool _isCreatingNewLevel;
@@ -99,6 +104,7 @@ public class LevelManager : MonoBehaviour
     private void UpdateLevel()
     {
         LevelDatabase.LevelDB[CurrentLevel].SlideData.LocalPoints = Path.path.localPoints;
+        LevelDatabase.LevelDB[CurrentLevel].SlideData.LocalNormals = Path.path.localNormals;
         LevelDatabase.LevelDB[CurrentLevel].SlideData.LocalTangents = Path.path.localTangents;
         LevelDatabase.LevelDB[CurrentLevel].SlideData.Density = Density;
         LevelDatabase.LevelDB[CurrentLevel].SlideData.Depth = Depth;
@@ -124,8 +130,8 @@ public class LevelManager : MonoBehaviour
     [GUIColor(0,1,0)]
     private void AddObstacle()
     {
-        LevelDatabase.LevelDB[CurrentLevel].ObstacleList.Add(_currentObstacle);
-        CurrentObstacle += LevelDatabase.LevelDB[CurrentLevel].ObstacleList.Count > 1 ? 1 : 0;
+        LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Add(new ObstacleData(Obstacle, _currentObstaclePos, _currentObstacleRot));
+        CurrentObstacle += LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count > 1 ? 1 : 0;
         UpdateProperties();
         ShowCurrentObstacles();
     }
@@ -135,7 +141,7 @@ public class LevelManager : MonoBehaviour
     [GUIColor(1,0,0)]
     private void DeleteObstacle()
     {
-        LevelDatabase.LevelDB[CurrentLevel].ObstacleList.RemoveAt(CurrentObstacle);
+        LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.RemoveAt(CurrentObstacle);
         CurrentObstacle -= 1;
         UpdateProperties();
         ShowCurrentObstacles();
@@ -147,11 +153,11 @@ public class LevelManager : MonoBehaviour
 
         if (_isLevelExist)
         {
-            _isObstacleExist = LevelDatabase.LevelDB[CurrentLevel].ObstacleList.Count != 0;
+            _isObstacleExist = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count != 0;
             
             _levelLastIndex = Mathf.Clamp(LevelDatabase.LevelDB.Count - 1,0,int.MaxValue);
             CurrentLevel = Mathf.Clamp(CurrentLevel, 0, _levelLastIndex);
-            _obstacleLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].ObstacleList.Count-1,0,int.MaxValue);
+            _obstacleLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count-1,0,int.MaxValue);
             CurrentObstacle = Mathf.Clamp(CurrentObstacle, 0, _obstacleLastIndex);
         }
         else
@@ -180,15 +186,15 @@ public class LevelManager : MonoBehaviour
     }
     private void ShowCurrentObstacles()
     {
-        _obstacleList.Clear();
+        _obstaclePosList.Clear();
         
         if (_isLevelExist && _isObstacleExist)
         {
-            var obstacles = LevelDatabase.LevelDB[CurrentLevel].ObstacleList;
+            var obstacles = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList;
 
             for (int i = 0; i < obstacles.Count; i++)
             {
-                _obstacleList.Add(obstacles[i]);
+                _obstaclePosList.Add(obstacles[i].Position);
             }
         }
     }
@@ -196,6 +202,7 @@ public class LevelManager : MonoBehaviour
     private void UpdateSliderData()
     {
         _slideData.LocalPoints = Path.path.localPoints;
+        _slideData.LocalNormals = Path.path.localNormals;
         _slideData.LocalTangents = Path.path.localTangents;
         _slideData.Density = Density;
         _slideData.Depth = Depth;
@@ -265,7 +272,7 @@ public class LevelManager : MonoBehaviour
         return _waterSlideMesh;
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         var mesh = GenerateMesh();
     
@@ -280,37 +287,40 @@ public class LevelManager : MonoBehaviour
         var nor = Vector3.up;
         var cross = Vector3.Cross(vec.normalized, nor);
         var vel = Mathf.SmoothStep(0, 1, 1 / 2f);
-        var dis = Width/4f;
+        var dis = Width/3f;
         
         switch (WidthLevel)
         {
             case 0:
-                _currentObstacle = pos + cross * dis + Vector3.up * vel * Depth;
+                _currentObstaclePos = pos + cross * dis + Vector3.up * vel * Depth * 0.8f;
+                _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
                 break;
             case 1:
-                _currentObstacle = Path.path.GetPointAtTime(Percentage/100f);
+                _currentObstaclePos = Path.path.GetPointAtTime(Percentage/100f);
+                _currentObstacleRot = Quaternion.LookRotation(cross);
                 break;
             case 2:
-                _currentObstacle = pos - cross * dis + Vector3.up * vel * Depth;
+                _currentObstaclePos = pos - cross * dis + Vector3.up * vel * Depth * 0.8f;
+                _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
                 break;
         }
         
         Gizmos.color = Color.magenta;
-        Gizmos.DrawSphere(_currentObstacle,0.05f);
+        Gizmos.DrawSphere(_currentObstaclePos,0.1f);
         
         if (!_isCreatingNewLevel)
         {
-            for (int i = 0; i < _obstacleList.Count; i++)
+            for (int i = 0; i < _obstaclePosList.Count; i++)
             {
-                if (_obstacleList[i] == _obstacleList[CurrentObstacle])
+                if (_obstaclePosList[i] == _obstaclePosList[CurrentObstacle])
                 {
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawSphere(_obstacleList[i],0.05f);
+                    Gizmos.DrawSphere(_obstaclePosList[i],0.1f);
                 }
                 else
                 {
                     Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(_obstacleList[i],0.05f);
+                    Gizmos.DrawSphere(_obstaclePosList[i],0.1f);
                 }
             }
         }
