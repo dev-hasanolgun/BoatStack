@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class GameState : IState<GameStateMachine>
 {
@@ -20,16 +21,18 @@ public class GameState : IState<GameStateMachine>
     public void OnStateEnter()
     {
         EventManager.TriggerEvent("OnLevelStart", null);
-        EventManager.StartListening("OnLevelFinish", EndLevel);
+        EventManager.StartListening("OnLevelFinish", NextLevel);
     }
     public void OnStateExit()
     {
         _stateMachine.GameManager.Player.IsSliding = false;
-        EventManager.StopListening("OnLevelFinish", EndLevel);
+        EventManager.StopListening("OnLevelFinish", NextLevel);
     }
 
-    private void EndLevel(Dictionary<string,object> message)
+    private void NextLevel(Dictionary<string,object> message)
     {
+        _stateMachine.GameManager.CurrentLevel++;
+        PlayerPrefs.SetInt("CurrentLevel", _stateMachine.GameManager.CurrentLevel);
         _stateMachine.SetState(new VictoryState(_stateMachine));
     }
 }

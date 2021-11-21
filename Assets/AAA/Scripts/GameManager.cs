@@ -11,8 +11,9 @@ public class GameManager : MonoBehaviour
     
     public static GameManager Instance { get; private set; }
     
-    public void StartGame(int startLevel = 0) // Create the player and start the game from selected level.
+    public void StartGame() // Create the player and start the game from selected level.
     {
+        var startLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
         var sliderData = LevelDatabase.LevelDB[startLevel].SlideData;
         var obstacleData = LevelDatabase.LevelDB[startLevel].ObstacleDataList;
         var extraBoatData = LevelDatabase.LevelDB[startLevel].ExtraBoatDataList;
