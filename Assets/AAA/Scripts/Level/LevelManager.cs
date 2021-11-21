@@ -69,10 +69,20 @@ public class LevelManager : MonoBehaviour
     [Range(0f,100f)]
     public float Percentage;
     
+    [BoxGroup("Object Settings")] [EnumToggleButtons, HideLabel]
+    public ObjectPlacementEnum ObjectPlacementLock;
+    
     [BoxGroup("Object Settings")]
+    [ShowIf("ObjectPlacementLock", ObjectPlacementEnum.Locked)]
     [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
     [Range(0,2)]
     public int WidthLevel;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectPlacementLock", ObjectPlacementEnum.Unlocked)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    [Range(-100,100)]
+    public float WidthPercentage;
     
     [BoxGroup("Object Settings")] [EnumToggleButtons, HideLabel]
     public ObjectEnum ObjectEnumField;
@@ -100,6 +110,10 @@ public class LevelManager : MonoBehaviour
     public enum ObjectEnum
     {
         Obstacle, ExtraBoat, PointBonus, SpeedBonus
+    }
+    public enum ObjectPlacementEnum
+    {
+        Locked, Unlocked
     }
     
     private Mesh _waterSlideMesh;
@@ -390,7 +404,6 @@ public class LevelManager : MonoBehaviour
             {
                 var dis = Width/2f / ((Density - 1) / 2);
                 var vel = Mathf.SmoothStep(0, 1, j / ((Density - 1) / 2f + Density/3f));
-                var deltaPos = new Vector3(pathNormals[i].x,0,pathNormals[i].z);
                 vertices[a] = pos + cross * (dis * j) + Vector3.up * (vel * Depth);
                 a++;
             }
@@ -400,7 +413,6 @@ public class LevelManager : MonoBehaviour
             {
                 var dis = Width/2f / ((Density - 1) / 2);
                 var vel = Mathf.SmoothStep(0, 1, j / ((Density - 1) / 2f + Density/3f));
-                var deltaPos = new Vector3(pathNormals[i].x,0,pathNormals[i].z);
                 vertices[a] = pos - cross * (dis * j) + Vector3.up * (vel * Depth);
                 a++;
             }
@@ -445,29 +457,44 @@ public class LevelManager : MonoBehaviour
         Gizmos.color = new Color(0f, 0f, 1f, 0.20f);
         Gizmos.DrawWireMesh(mesh);
 
-        var pos = Path.path.GetPointAtTime(Percentage/100f);
-        var vec = Path.path.GetPointAtTime((Percentage + 1f) / 100f) - pos;
-        var nor = Vector3.up;
-        var cross = Vector3.Cross(vec.normalized, nor);
-        var vel = Mathf.SmoothStep(0, 1, 1 / 2f);
-        var dis = Width/3f;
-        
-        switch (WidthLevel)
+        if (ObjectPlacementLock == ObjectPlacementEnum.Locked)
         {
-            case 0:
-                _currentObstaclePos = pos + cross * dis + Vector3.up * vel * Depth * 0.8f;
-                _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
-                break;
-            case 1:
-                _currentObstaclePos = Path.path.GetPointAtTime(Percentage/100f);
-                _currentObstacleRot = Quaternion.LookRotation(cross);
-                break;
-            case 2:
-                _currentObstaclePos = pos - cross * dis + Vector3.up * vel * Depth * 0.8f;
-                _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
-                break;
-        }
+            var pos = Path.path.GetPointAtTime(Percentage/100f);
+            var vec = Path.path.GetPointAtTime((Percentage + 1f) / 100f) - pos;
+            var nor = Vector3.up;
+            var cross = Vector3.Cross(vec.normalized, nor);
+            var vel = Mathf.SmoothStep(0, 1, 1 / 2f);
+            var dis = Width/3f;
         
+            switch (WidthLevel)
+            {
+                case 0:
+                    _currentObstaclePos = pos + cross * dis + Vector3.up * vel * Depth * 0.8f;
+                    _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
+                    break;
+                case 1:
+                    _currentObstaclePos = Path.path.GetPointAtTime(Percentage/100f);
+                    _currentObstacleRot = Quaternion.LookRotation(cross);
+                    break;
+                case 2:
+                    _currentObstaclePos = pos - cross * dis + Vector3.up * vel * Depth * 0.8f;
+                    _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
+                    break;
+            }
+        }
+        else if (ObjectPlacementLock == ObjectPlacementEnum.Unlocked && WidthPercentage != 0f)
+        {
+            var pos = Path.path.GetPointAtTime(Percentage/100f);
+            var vec = Path.path.GetPointAtTime((Percentage + 1f) / 100f) - pos;
+            var nor = Vector3.up;
+            var cross = Vector3.Cross(vec.normalized, nor);
+            var vel = Mathf.SmoothStep(0, 1, WidthPercentage / 100f);
+            var dis = Width/2f / 100f;
+            
+            _currentObstaclePos = pos + cross * dis * WidthPercentage + Vector3.up * (vel * Depth * 0.8f);
+            _currentObstacleRot = Quaternion.LookRotation((_currentObstaclePos - pos).normalized);
+        }
+
         Gizmos.color = Color.magenta;
         Gizmos.DrawSphere(_currentObstaclePos,0.1f);
         
