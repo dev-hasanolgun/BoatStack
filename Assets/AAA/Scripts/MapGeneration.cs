@@ -5,6 +5,8 @@ using UnityEngine;
 public class MapGeneration : MonoBehaviour
 {
     public MeshFilter MeshFilter;
+
+    private List<GameObject> _objectList = new List<GameObject>();
     
     public void GenerateMesh(Vector3[] positions, Vector3[] pathNormals, int Density, float Width, float Depth)
     {
@@ -70,7 +72,52 @@ public class MapGeneration : MonoBehaviour
         var data = obstacleDataList;
         for (int i = 0; i < data.Count; i++)
         {
-            Instantiate(data[i].Obstacle, data[i].Position + Vector3.up * (data[i].Obstacle.transform.localScale.y / 2f), data[i].Rotation);
+            var obstacle = PoolManager.Instance.GetObjectFromPool("obstaclePool", data[i].Obstacle);
+            obstacle.transform.position = data[i].Position + Vector3.up * (data[i].Obstacle.transform.localScale.y / 2f);
+            obstacle.transform.rotation = data[i].Rotation;
+            _objectList.Add(obstacle.gameObject);
         }
+    }
+    public void GenerateExtraBoats(List<ExtraBoatData> extraBoatDataList)
+    {
+        var data = extraBoatDataList;
+        for (int i = 0; i < data.Count; i++)
+        {
+            var boat = PoolManager.Instance.GetObjectFromPool("extraBoatPool", data[i].ExtraBoat);
+            boat.transform.position = data[i].Position + Vector3.up * (data[i].ExtraBoat.transform.localScale.y / 2f);
+            boat.transform.rotation = data[i].Rotation;
+            _objectList.Add(boat.gameObject);
+        }
+    }
+    public void GeneratePointBonus(List<PointBonusData> pointBonusDataList)
+    {
+        var data = pointBonusDataList;
+        for (int i = 0; i < data.Count; i++)
+        {
+            var pointItem = PoolManager.Instance.GetObjectFromPool("pointItemPool", data[i].PointBonus);
+            pointItem.transform.position = data[i].Position + Vector3.up * (data[i].PointBonus.transform.localScale.y / 2f);
+            pointItem.transform.rotation = data[i].Rotation;
+            _objectList.Add(pointItem.gameObject);
+        }
+    }
+    public void GenerateSpeedBoosts(List<SpeedBonusData> speedBonusDataList)
+    {
+        var data = speedBonusDataList;
+        for (int i = 0; i < data.Count; i++)
+        {
+            var speedItem = PoolManager.Instance.GetObjectFromPool("speedItemPool", data[i].SpeedBonus);
+            speedItem.transform.position = data[i].Position + Vector3.up * (data[i].SpeedBonus.transform.localScale.y / 2f);
+            speedItem.transform.rotation = data[i].Rotation;
+            _objectList.Add(speedItem.gameObject);
+        }
+    }
+
+    public void DisableMapObjects()
+    {
+        for (int i = 0; i < _objectList.Count; i++)
+        {
+            _objectList[i].SetActive(false);
+        }
+        _objectList.Clear();
     }
 }

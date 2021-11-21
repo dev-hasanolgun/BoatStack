@@ -11,12 +11,15 @@ public class VictoryState : IState<GameStateMachine>
     
     public void Tick()
     {
-        
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            _stateMachine.SetState(new TutorialState(_stateMachine));
+        }
     }
 
     public void OnStateEnter()
     {
-        _stateMachine.GameManager.StartGame();
+        
     }
 
     public void OnStateExit()

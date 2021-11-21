@@ -9,7 +9,7 @@ public class LevelManager : MonoBehaviour
     public PathCreator Path;
     
     [BoxGroup("Create Level")]
-    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentPath")] [OnValueChanged("ShowCurrentObstacles")]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentPath")] [OnValueChanged("ShowCurrentObjects")]
     [PropertyRange(0,"_levelLastIndex")]
     [SuppressInvalidAttributeError]
     public int CurrentLevel;
@@ -36,33 +36,85 @@ public class LevelManager : MonoBehaviour
     [BoxGroup("Slide Mesh Settings")]
     public float Width = 1;
     
-    [BoxGroup("Obstacle Settings")]
-    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.Obstacle)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
     [PropertyRange(0,"_obstacleLastIndex")]
     public int CurrentObstacle;
     private int _obstacleLastIndex;
     
-    [BoxGroup("Obstacle Settings")]
-    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.ExtraBoat)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    [PropertyRange(0,"_extraBoatLastIndex")]
+    public int CurrentExtraBoat;
+    private int _extraBoatLastIndex;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.PointBonus)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    [PropertyRange(0,"_pointBonusLastIndex")]
+    public int CurrentPointBonus;
+    private int _pointBonusLastIndex;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.SpeedBonus)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    [PropertyRange(0,"_speedBonusLastIndex")]
+    public int CurrentSpeedBonus;
+    private int _speedBonusLastIndex;
+    
+    [BoxGroup("Object Settings")]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
     [Range(0f,100f)]
     public float Percentage;
     
-    [BoxGroup("Obstacle Settings")]
-    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    [BoxGroup("Object Settings")]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
     [Range(0,2)]
     public int WidthLevel;
     
-    [BoxGroup("Obstacle Settings")]
-    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObstacles")]
+    [BoxGroup("Object Settings")] [EnumToggleButtons, HideLabel]
+    public ObjectEnum ObjectEnumField;
+
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.Obstacle)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
     public Obstacle Obstacle;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.ExtraBoat)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    public ExtraBoatItem ExtraBoat;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.PointBonus)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    public PointBonusItem PointBonus;
+    
+    [BoxGroup("Object Settings")]
+    [ShowIf("ObjectEnumField", ObjectEnum.SpeedBonus)]
+    [OnValueChanged("UpdateProperties")] [OnValueChanged("ShowCurrentObjects")]
+    public SpeedBonusItem SpeedBonus;
+    
+    public enum ObjectEnum
+    {
+        Obstacle, ExtraBoat, PointBonus, SpeedBonus
+    }
     
     private Mesh _waterSlideMesh;
     private WaterSlideData _slideData;
     private Vector3 _currentObstaclePos;
     private Quaternion _currentObstacleRot;
     private List<Vector3> _obstaclePosList = new List<Vector3>();
+    private List<Vector3> _extraBoatPosList = new List<Vector3>();
+    private List<Vector3> _pointBonusPosList = new List<Vector3>();
+    private List<Vector3> _speedBonusPosList = new List<Vector3>();
     private bool _isLevelExist;
     private bool _isObstacleExist;
+    private bool _isExtraBoatExist;
+    private bool _isPointBonusExist;
+    private bool _isSpeedBonusExist;
     private bool _isCreatingNewLevel;
     
     [BoxGroup("Create Level")]
@@ -85,7 +137,7 @@ public class LevelManager : MonoBehaviour
         CurrentLevel += LevelDatabase.LevelDB.Count > 1 ? 1 : 0;
         _isCreatingNewLevel = false;
         UpdateProperties();
-        ShowCurrentObstacles();
+        ShowCurrentObjects();
     }
     
     [BoxGroup("Create Level")]
@@ -122,29 +174,92 @@ public class LevelManager : MonoBehaviour
         CurrentLevel -= 1;
         UpdateProperties();
         ShowCurrentPath();
-        ShowCurrentObstacles();
+        ShowCurrentObjects();
     }
     
-    [BoxGroup("Obstacle Settings")]
-    [Button("Add Obstacle", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false")]
+    [BoxGroup("Object Settings")]
+    [Button("Add Obstacle", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this.ObjectEnumField == ObjectEnum.Obstacle")]
     [GUIColor(0,1,0)]
     private void AddObstacle()
     {
         LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Add(new ObstacleData(Obstacle, _currentObstaclePos, _currentObstacleRot));
         CurrentObstacle += LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count > 1 ? 1 : 0;
         UpdateProperties();
-        ShowCurrentObstacles();
+        ShowCurrentObjects();
     }
     
-    [BoxGroup("Obstacle Settings")]
-    [Button("Delete Obstacle", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this._isObstacleExist")]
+    [BoxGroup("Object Settings")]
+    [Button("Delete Obstacle", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this._isObstacleExist && this.ObjectEnumField == ObjectEnum.Obstacle")]
     [GUIColor(1,0,0)]
     private void DeleteObstacle()
     {
         LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.RemoveAt(CurrentObstacle);
         CurrentObstacle -= 1;
         UpdateProperties();
-        ShowCurrentObstacles();
+        ShowCurrentObjects();
+    }
+    [BoxGroup("Object Settings")]
+    [Button("Add ExtraBoat", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this.ObjectEnumField == ObjectEnum.ExtraBoat")]
+    [GUIColor(0,1,0)]
+    private void AddExtraBoat()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList.Add(new ExtraBoatData(ExtraBoat, _currentObstaclePos, _currentObstacleRot));
+        CurrentExtraBoat += LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList.Count > 1 ? 1 : 0;
+        UpdateProperties();
+        ShowCurrentObjects();
+    }
+    
+    [BoxGroup("Object Settings")]
+    [Button("Delete ExtraBoat", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this._isExtraBoatExist && this.ObjectEnumField == ObjectEnum.ExtraBoat")]
+    [GUIColor(1,0,0)]
+    private void DeleteExtraBoat()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList.RemoveAt(CurrentExtraBoat);
+        CurrentExtraBoat -= 1;
+        UpdateProperties();
+        ShowCurrentObjects();
+    }
+    [BoxGroup("Object Settings")]
+    [Button("Add PointBonus", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this.ObjectEnumField == ObjectEnum.PointBonus")]
+    [GUIColor(0,1,0)]
+    private void AddPointBonus()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList.Add(new PointBonusData(PointBonus, _currentObstaclePos, _currentObstacleRot));
+        CurrentPointBonus += LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList.Count > 1 ? 1 : 0;
+        UpdateProperties();
+        ShowCurrentObjects();
+    }
+    
+    [BoxGroup("Object Settings")]
+    [Button("Delete PointBonus", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this._isPointBonusExist && this.ObjectEnumField == ObjectEnum.PointBonus")]
+    [GUIColor(1,0,0)]
+    private void DeletePointBonus()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList.RemoveAt(CurrentPointBonus);
+        CurrentPointBonus -= 1;
+        UpdateProperties();
+        ShowCurrentObjects();
+    }
+    [BoxGroup("Object Settings")]
+    [Button("Add SpeedBonus", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this.ObjectEnumField == ObjectEnum.SpeedBonus")]
+    [GUIColor(0,1,0)]
+    private void AddSpeedBonus()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList.Add(new SpeedBonusData(SpeedBonus, _currentObstaclePos, _currentObstacleRot));
+        CurrentSpeedBonus += LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList.Count > 1 ? 1 : 0;
+        UpdateProperties();
+        ShowCurrentObjects();
+    }
+    
+    [BoxGroup("Object Settings")]
+    [Button("Delete SpeedBonus", ButtonSizes.Medium), ShowIf("@this._isLevelExist && this._isCreatingNewLevel == false && this._isSpeedBonusExist && this.ObjectEnumField == ObjectEnum.SpeedBonus")]
+    [GUIColor(1,0,0)]
+    private void DeleteSpeedBonus()
+    {
+        LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList.RemoveAt(CurrentSpeedBonus);
+        CurrentSpeedBonus -= 1;
+        UpdateProperties();
+        ShowCurrentObjects();
     }
     
     private void UpdateProperties()
@@ -154,11 +269,20 @@ public class LevelManager : MonoBehaviour
         if (_isLevelExist)
         {
             _isObstacleExist = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count != 0;
+            _isExtraBoatExist = LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList.Count != 0;
+            _isPointBonusExist = LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList.Count != 0;
+            _isSpeedBonusExist = LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList.Count != 0;
             
             _levelLastIndex = Mathf.Clamp(LevelDatabase.LevelDB.Count - 1,0,int.MaxValue);
             CurrentLevel = Mathf.Clamp(CurrentLevel, 0, _levelLastIndex);
             _obstacleLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList.Count-1,0,int.MaxValue);
             CurrentObstacle = Mathf.Clamp(CurrentObstacle, 0, _obstacleLastIndex);
+            _extraBoatLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList.Count-1,0,int.MaxValue);
+            CurrentExtraBoat = Mathf.Clamp(CurrentExtraBoat, 0, _extraBoatLastIndex);
+            _pointBonusLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList.Count-1,0,int.MaxValue);
+            CurrentPointBonus = Mathf.Clamp(CurrentPointBonus, 0, _pointBonusLastIndex);
+            _speedBonusLastIndex = Mathf.Clamp(LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList.Count-1,0,int.MaxValue);
+            CurrentSpeedBonus = Mathf.Clamp(CurrentSpeedBonus, 0, _speedBonusLastIndex);
         }
         else
         {
@@ -166,6 +290,12 @@ public class LevelManager : MonoBehaviour
             CurrentLevel = 0;
             _obstacleLastIndex = 0;
             CurrentObstacle = 0;
+            _extraBoatLastIndex = 0;
+            CurrentExtraBoat = 0;
+            _pointBonusLastIndex = 0;
+            CurrentPointBonus = 0;
+            _speedBonusLastIndex = 0;
+            CurrentSpeedBonus = 0;
         }
         
         #if UNITY_EDITOR
@@ -184,17 +314,50 @@ public class LevelManager : MonoBehaviour
             Path.EditorData.ResetBezierPath(transform.position);
         }
     }
-    private void ShowCurrentObstacles()
+    private void ShowCurrentObjects()
     {
         _obstaclePosList.Clear();
+        _extraBoatPosList.Clear();
+        _pointBonusPosList.Clear();
+        _speedBonusPosList.Clear();
         
-        if (_isLevelExist && _isObstacleExist)
+        if (_isLevelExist)
         {
-            var obstacles = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList;
-
-            for (int i = 0; i < obstacles.Count; i++)
+            if (_isObstacleExist)
             {
-                _obstaclePosList.Add(obstacles[i].Position);
+                var obstacles = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList;
+
+                for (int i = 0; i < obstacles.Count; i++)
+                {
+                    _obstaclePosList.Add(obstacles[i].Position);
+                }
+            }
+            if (_isExtraBoatExist)
+            {
+                var extraBoats = LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList;
+
+                for (int i = 0; i < extraBoats.Count; i++)
+                {
+                    _extraBoatPosList.Add(extraBoats[i].Position);
+                }
+            }
+            if (_isPointBonusExist)
+            {
+                var pointBonuses = LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList;
+
+                for (int i = 0; i < pointBonuses.Count; i++)
+                {
+                    _pointBonusPosList.Add(pointBonuses[i].Position);
+                }
+            }
+            if (_isSpeedBonusExist)
+            {
+                var speedBonuses = LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList;
+
+                for (int i = 0; i < speedBonuses.Count; i++)
+                {
+                    _speedBonusPosList.Add(speedBonuses[i].Position);
+                }
             }
         }
     }
@@ -310,18 +473,71 @@ public class LevelManager : MonoBehaviour
         
         if (!_isCreatingNewLevel)
         {
-            for (int i = 0; i < _obstaclePosList.Count; i++)
+            if (_isObstacleExist)
             {
-                if (_obstaclePosList[i] == _obstaclePosList[CurrentObstacle])
-                {
-                    Gizmos.color = Color.yellow;
-                    Gizmos.DrawSphere(_obstaclePosList[i],0.1f);
-                }
-                else
+                for (int i = 0; i < _obstaclePosList.Count; i++)
                 {
                     Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(_obstaclePosList[i],0.1f);
+                    Gizmos.DrawSphere(_obstaclePosList[i], 0.1f);
                 }
+            }
+
+            if (_isExtraBoatExist)
+            {
+                for (int i = 0; i < _extraBoatPosList.Count; i++)
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawSphere(_extraBoatPosList[i], 0.1f);
+                }
+            }
+
+            if (_isPointBonusExist)
+            {
+                for (int i = 0; i < _pointBonusPosList.Count; i++)
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawSphere(_pointBonusPosList[i], 0.1f);
+                }
+            }
+
+            if (_isSpeedBonusExist)
+            {
+                for (int i = 0; i < _speedBonusPosList.Count; i++)
+                {
+                    Gizmos.color = Color.cyan;
+                    Gizmos.DrawSphere(_speedBonusPosList[i], 0.1f);
+                }
+            }
+            switch (ObjectEnumField)
+            {
+                case ObjectEnum.Obstacle:
+                    if (_isObstacleExist)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawSphere(_obstaclePosList[CurrentObstacle], 0.1f);
+                    }
+                    break;
+                case ObjectEnum.ExtraBoat:
+                    if (_isExtraBoatExist)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawSphere(_extraBoatPosList[CurrentExtraBoat], 0.1f);
+                    }
+                    break;
+                case ObjectEnum.PointBonus:
+                    if (_isPointBonusExist)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawSphere(_pointBonusPosList[CurrentPointBonus], 0.1f);
+                    }
+                    break;
+                case ObjectEnum.SpeedBonus:
+                    if (_isSpeedBonusExist)
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawSphere(_speedBonusPosList[CurrentSpeedBonus], 0.1f);
+                    }
+                    break;
             }
         }
     }

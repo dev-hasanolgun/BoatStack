@@ -556,5 +556,44 @@ MonoBehaviour:
     - Obstacle: {fileID: 1443747819427686373, guid: 278a623f7111d674ab8349685c4e9bdb, type: 3}
       Position: {x: 0.026701242, y: 0.2, z: 7.492297}
       Rotation: {x: -0.021433037, y: 0.9785641, z: 0.14362274, w: 0.14603256}
+    ExtraBoatDataList:
+    - ExtraBoat: {fileID: -4043925994490625702, guid: 17507659f78be5449975418c0b7a9016, type: 3}
+      Position: {x: 3.7596183, y: 0.2, z: 5.419897}
+      Rotation: {x: -0.08459942, y: -0.80415267, z: -0.118024565, w: 0.5764127}
+    - ExtraBoat: {fileID: -4043925994490625702, guid: 17507659f78be5449975418c0b7a9016, type: 3}
+      Position: {x: 3.5314736, y: 0.2, z: 6.0245786}
+      Rotation: {x: -0.07601962, y: -0.84299237, z: -0.123725004, w: 0.5179547}
+    - ExtraBoat: {fileID: -4043925994490625702, guid: 17507659f78be5449975418c0b7a9016, type: 3}
+      Position: {x: 4.474266, y: 0, z: 2.691197}
+      Rotation: {x: 0, y: -0.64979136, z: -0, w: 0.76011264}
+    - ExtraBoat: {fileID: -4043925994490625702, guid: 17507659f78be5449975418c0b7a9016, type: 3}
+      Position: {x: 4.5825596, y: 0, z: 3.7969046}
+      Rotation: {x: 0, y: -0.70692307, z: -0, w: 0.7072905}
+    PointBonusDataList:
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 0.5945924, y: 0, z: -0.0017250972}
+      Rotation: {x: 0, y: -0.040170483, z: -0, w: 0.99919283}
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 1.3323815, y: 0, z: 0.07132734}
+      Rotation: {x: 0, y: -0.07955748, z: -0, w: 0.9968303}
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 1.6984315, y: 0, z: 0.13013114}
+      Rotation: {x: 0, y: -0.10964792, z: -0, w: 0.9939705}
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 0.9641626, y: 0, z: 0.028038625}
+      Rotation: {x: 0, y: -0.05847927, z: -0, w: 0.99828863}
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 2.0602376, y: 0, z: 0.21093836}
+      Rotation: {x: 0, y: -0.13923113, z: -0, w: 0.99025995}
+    - PointBonus: {fileID: 3053240853918997256, guid: 05e9d3581af2d8744a9993cf16665e7c, type: 3}
+      Position: {x: 2.4165666, y: 0, z: 0.31315923}
+      Rotation: {x: 0, y: -0.18285495, z: -0, w: 0.98313993}
+    SpeedBonusDataList:
+    - SpeedBonus: {fileID: 435237504295435591, guid: e9cb38b0b8e8b88409d5fd6288ec903f, type: 3}
+      Position: {x: 2.762431, y: 0, z: 0.44642434}
+      Rotation: {x: 0, y: -0.22566397, z: -0, w: 0.9742052}
+    - SpeedBonus: {fileID: 435237504295435591, guid: e9cb38b0b8e8b88409d5fd6288ec903f, type: 3}
+      Position: {x: 4.5319266, y: 0, z: 3.0573916}
+      Rotation: {x: 0, y: -0.67350805, z: -0, w: 0.7391799}
     LevelID: 0
     LevelName: 

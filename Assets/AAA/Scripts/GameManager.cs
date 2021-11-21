@@ -15,19 +15,25 @@ public class GameManager : MonoBehaviour
     {
         var sliderData = LevelDatabase.LevelDB[startLevel].SlideData;
         var obstacleData = LevelDatabase.LevelDB[startLevel].ObstacleDataList;
-        
-        Player.BoatAmount = 1;
-        Player.WaterSlideData = sliderData;
-        
-        Player.transform.position = sliderData.LocalPoints[0];
-        Player.Child.transform.localPosition = Vector3.zero;
+        var extraBoatData = LevelDatabase.LevelDB[startLevel].ExtraBoatDataList;
+        var pointBonusData = LevelDatabase.LevelDB[startLevel].PointBonusDataList;
+        var speedBonusData = LevelDatabase.LevelDB[startLevel].SpeedBonusDataList;
         
         var rot = Quaternion.LookRotation(sliderData.LocalPoints[1] - sliderData.LocalPoints[0]);
+        
+        Player.ResetStats();
+        Player.WaterSlideData = sliderData;
+        Player.transform.position = sliderData.LocalPoints[0];
+        Player.Child.transform.localPosition = Vector3.zero;
         Player.transform.rotation = rot;
         Player.Child.transform.rotation = rot;
-        
+
+        MapGeneration.DisableMapObjects();
         MapGeneration.GenerateMesh(sliderData.LocalPoints,sliderData.LocalNormals,sliderData.Density,sliderData.Width,sliderData.Depth);
         MapGeneration.GenerateObstacles(obstacleData);
+        MapGeneration.GenerateExtraBoats(extraBoatData);
+        MapGeneration.GeneratePointBonus(pointBonusData);
+        MapGeneration.GenerateSpeedBoosts(speedBonusData);
         
         CurrentLevel = startLevel;
     }
