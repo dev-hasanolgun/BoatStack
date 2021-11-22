@@ -13,9 +13,10 @@ public class PointBonusItem : MonoBehaviour, ICollectable, IPoolable
         }
     }
 
-    public void Collect(Player player)
+    public void Collect(Player player) // Add points to the player
     {
         player.CurrentScore += BonusPoints;
+        player.TotalScore += BonusPoints;
         gameObject.SetActive(false);
     }
     

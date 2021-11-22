@@ -21,20 +21,23 @@ public class LevelEndState : IState<GameStateMachine>
 
     public void OnStateEnter()
     {
-        EventManager.StartListening("OnPlayLevel", PlayLevel);
+        EventManager.StartListening("OnPlayNextLevel", PlayNextLevel);
         EventManager.StartListening("OnRestartLevel", RestartLevel);
         _stateMachine.GameManager.GameUI.NextLevelButton.gameObject.SetActive(true);
     }
 
     public void OnStateExit()
     {
-        EventManager.StopListening("OnPlayLevel", PlayLevel);
+        EventManager.StopListening("OnPlayNextLevel", PlayNextLevel);
         EventManager.StopListening("OnRestartLevel", RestartLevel);
         _stateMachine.GameManager.GameUI.NextLevelButton.gameObject.SetActive(false);
     }
-    private void PlayLevel(Dictionary<string, object> message)
+    private void PlayNextLevel(Dictionary<string, object> message)
     {
-        _stateMachine.GameManager.CurrentLevel++;
+        var currentLevel = _stateMachine.GameManager.CurrentLevel++;
+        var nextLevel = PlayerPrefs.GetInt("CurrentLevel", 0) + 1;
+        PlayerPrefs.SetInt("CurrentLevel", nextLevel);
+        PlayerPrefs.SetInt("CurrentLevelIndex", currentLevel);
         _stateMachine.SetState(new TutorialState(_stateMachine));
     }
     private void RestartLevel(Dictionary<string, object> message)

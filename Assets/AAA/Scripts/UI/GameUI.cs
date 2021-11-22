@@ -7,4 +7,5 @@ public class GameUI : MonoBehaviour
     public RestartButton RestartButton;
     public TutorialUI TutorialUI;
     public TextMeshProUGUI CurrentLevelText;
+    public TextMeshProUGUI TotalScoreText;
 }

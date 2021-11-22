@@ -21,14 +21,13 @@ public class SpeedBonusItem : MonoBehaviour, ICollectable, IPoolable
     {
         StartCoroutine(BoostSpeed(player, BoostAmount, Duration));
     }
-    private IEnumerator BoostSpeed(Player player, float boostAmount, float duration)
+    private IEnumerator BoostSpeed(Player player, float boostAmount, float duration) // Boost player's speed for a certain duration
     {
-        var temp = player.Speed;
         player.Speed += boostAmount;
         MeshRenderer.enabled = false;
         Collider.enabled = false;
         yield return new WaitForSeconds(duration);
-        player.Speed = temp;
+        player.Speed = player.DefaulSpeed;
         MeshRenderer.enabled = true;
         Collider.enabled = true;
         gameObject.SetActive(false);

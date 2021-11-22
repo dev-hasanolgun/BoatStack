@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FingerAnim : MonoBehaviour
 {
@@ -19,7 +16,7 @@ public class FingerAnim : MonoBehaviour
         _rightPoint = pos + Vector3.right * Distance;
     }
 
-    void Update() // I know its cringe not to use dotween already
+    void Update() // Kinda sad that im not using dotween already
     {
         var pos = transform.localPosition;
 

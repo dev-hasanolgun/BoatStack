@@ -19,9 +19,11 @@ public class TutorialState : IState<GameStateMachine>
 
     public void OnStateEnter()
     {
+        var player = _stateMachine.GameManager.Player;
         _stateMachine.GameManager.StartGame();
         _stateMachine.GameManager.GameUI.TutorialUI.gameObject.SetActive(true);
         _stateMachine.GameManager.GameUI.CurrentLevelText.text = "Level " + (PlayerPrefs.GetInt("CurrentLevel", 0) + 1).ToString("0");
+        _stateMachine.GameManager.GameUI.TotalScoreText.text = player.TotalScore.ToString("0");
     }
 
     public void OnStateExit()

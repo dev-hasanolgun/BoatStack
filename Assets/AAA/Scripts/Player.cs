@@ -1,30 +1,31 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public WaterSlideData WaterSlideData;
-    public CapsuleCollider Collider;
-    public Transform Child;
-    public Transform CharacterVisual;
-    public Boat Boat;
-    public List<Boat> BoatList = new List<Boat>();
-    public Vector3 EndPoint;
-    public int BoatAmount = 1;
-    public int TargetIndex;
+    public WaterSlideData WaterSlideData; // Slide data which includes local points, normals, tangents with width, depth etc. sizes
+    public CapsuleCollider Collider; // Collider of the player
+    public Transform Child; // Child object to control rotations and horizontal movement along the curve
+    public Transform CharacterVisual; // Character visual up on the boat
+    public Boat Boat; // Boat Prefab
+    public List<Boat> BoatList = new List<Boat>(); // Current boat list that player has
+    public Vector3 EndPoint; // End point on the final bonus point platform
+    public int CurrentBoatAmount = 1;
+    public int TargetIndex; // Target waypoint index
+    public float TotalScore;
     public float CurrentScore;
-    public float Speed = 1f;
+    public float Speed = 1.5f;
+    public float DefaulSpeed = 1.5f;
     public float HorizontalSpeed = 5f;
     public float Offset;
     public bool IsSliding;
 
-    private List<Boat> _tempBoatList = new List<Boat>();
+    private List<Boat> _tempBoatList = new List<Boat>(); // Temporary boat list to pool boats at the final bonus platform
     private float _finalTimer;
     private float _mousePosX;
 
-    public void ResetStats()
+    public void ResetStats() // Reset player data to default along with the positions and rotations
     {
         for (int i = 0; i < BoatList.Count; i++)
         {
@@ -45,24 +46,27 @@ public class Player : MonoBehaviour
         CharacterVisual.transform.localPosition = Vector3.zero + Vector3.up*0.15f;
         CharacterVisual.transform.localRotation = Quaternion.identity;
 
-        BoatAmount = 1;
+        CurrentBoatAmount = 1;
+        CurrentScore = 0;
         TargetIndex = 0;
-        Speed = 1f;
+        Speed = DefaulSpeed;
         Offset = 0f;
         IsSliding = false;
     }
-    public void CharacterMovement()
+    public void CharacterMovement() // Basically player's horizontal movement along the curve
     {
         var waypoints = WaterSlideData.LocalPoints;
         var density = WaterSlideData.Density;
         var depth = WaterSlideData.Depth;
         var width = WaterSlideData.Width;
         var targetIndex = TargetIndex;
-        
+
+        // Get position along the curve corresponding to the offset
         var vel = Mathf.SmoothStep(0, 1, Mathf.Abs(Offset) / ((density - 1) / 2f + density/2f));
-        var height = Vector3.up * (vel * depth * 2f);
+        var height = Vector3.up * (vel * depth);
         var radius = (Mathf.Pow(width+1f, 2f) + 4f * Mathf.Pow(depth, 2f)) / (8f * depth);
         var dir = waypoints[targetIndex] + Vector3.up * radius - Child.transform.position;
+        
         if (Input.GetMouseButtonDown(0))
         {
             _mousePosX = Input.mousePosition.x;
@@ -70,31 +74,21 @@ public class Player : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
-            if (Input.mousePosition.x < _mousePosX)
+            if (Input.mousePosition.x < _mousePosX && Offset < width*2f)
             {
                 _mousePosX = Input.mousePosition.x;
                 Offset += Time.deltaTime*HorizontalSpeed*5f;
                 Child.transform.position -= Child.transform.right * (Time.deltaTime * HorizontalSpeed);
             }
 
-            if (Input.mousePosition.x > _mousePosX)
+            if (Input.mousePosition.x > _mousePosX && Offset > -width*2f)
             {
                 _mousePosX = Input.mousePosition.x;
                 Offset -= Time.deltaTime*HorizontalSpeed*5f;
                 Child.transform.position += Child.transform.right * (Time.deltaTime * HorizontalSpeed);
             }
         }
-        // if (Input.GetKey(KeyCode.LeftArrow))
-        // {
-        //     Offset += Time.deltaTime*HorizontalSpeed;
-        //     Child.transform.position -= Child.transform.right * Time.deltaTime;
-        // }
-        // if (Input.GetKey(KeyCode.RightArrow))
-        // {
-        //     Offset -= Time.deltaTime*HorizontalSpeed;
-        //     Child.transform.position += Child.transform.right * Time.deltaTime;
-        // }
-        Child.transform.position = new Vector3(Child.transform.position.x, height.y+0.1f, Child.transform.position.z);
+        Child.transform.position = new Vector3(Child.transform.position.x, transform.position.y+height.y+0.1f, Child.transform.position.z);
         Child.transform.rotation = Quaternion.LookRotation(Child.transform.forward,dir.normalized);
     }
     private void StartSliding(Dictionary<string,object> message)
@@ -102,7 +96,7 @@ public class Player : MonoBehaviour
         IsSliding = true;
         StartCoroutine(Move());
     }
-    private IEnumerator Move()
+    private IEnumerator Move() // Move player along the waypoints
     {
         var waypoints = WaterSlideData.LocalPoints;
         var rotations = WaterSlideData.LocalTangents;
@@ -120,7 +114,7 @@ public class Player : MonoBehaviour
             if (Vector3.Distance(pos, plane.ClosestPointOnPlane(pos)) < 0.1f)
             {
                 TargetIndex++;
-                if (TargetIndex >= waypoints.Length)
+                if (TargetIndex >= waypoints.Length-1)
                 {
                     EventManager.TriggerEvent("OnLevelFinish", null);
                     yield break;
@@ -134,10 +128,9 @@ public class Player : MonoBehaviour
             yield return null;
         }
     }
-
-    public void EndPlatformMovement()
+    public void EndPlatformMovement() // Movement after player finished the level and moving along the bonus point platforms
     {
-        if (BoatAmount > 0)
+        if (CurrentBoatAmount > 0)
         {
             transform.position += transform.forward * (Time.deltaTime * Speed);
         }
@@ -156,10 +149,10 @@ public class Player : MonoBehaviour
             }
         }
     }
-    private void TakeDamage(Dictionary<string,object> message)
+    private void TakeDamage(Dictionary<string,object> message) // Remove boat according to taken damage and position remaining boats that player has
     {
         var obstacle = (Obstacle) message["obstacle"];
-        if (BoatAmount > 0)
+        if (CurrentBoatAmount > 0)
         {
             for (int j = 0; j < obstacle.Damage; j++)
             {
@@ -173,31 +166,31 @@ public class Player : MonoBehaviour
                 }
                 Collider.height -= Boat.transform.localScale.y;
                 Collider.center -= Vector3.up * scale/2f;
-                BoatAmount--;
+                CurrentBoatAmount--;
             }
         }
     }
 
-    private void CountBoat(Dictionary<string,object> message)
+    private void CountBoat(Dictionary<string,object> message) // Deparent one boat and remove it from the boat list
     {
         EndPoint = (Vector3) message["endPoint"];
-        if (BoatAmount > 0)
+        if (CurrentBoatAmount > 0)
         {
             var scale = Boat.transform.localScale.y;
             BoatList[^1].gameObject.transform.SetParent(null);
             _tempBoatList.Add(BoatList[^1]);
             BoatList.RemoveAt(BoatList.Count-1);
-            BoatAmount--;
+            CurrentBoatAmount--;
         }
     }
 
-    private void CountRemainingBoats(Dictionary<string, object> message)
+    private void CountRemainingBoats(Dictionary<string, object> message) // Pool remaining boats and remove them from the boat list
     {
         EndPoint = (Vector3) message["endPoint"];
-        if (BoatAmount > 0)
+        if (CurrentBoatAmount > 0)
         {
             _finalTimer += Time.deltaTime;
-            Speed = 0f;
+            Speed = 0f; // Stop movement while pooling remaining boats
             
             if (_finalTimer > 0.3f)
             {
@@ -209,41 +202,19 @@ public class Player : MonoBehaviour
                     BoatList[i].transform.localPosition -= Vector3.up * scale;
                 }
                 CharacterVisual.transform.localPosition -= Vector3.up * scale;
-                BoatAmount--;
+                CurrentBoatAmount--;
                 _finalTimer = 0f;
             }
         }
         else
         {
-            Speed = 1;
+            Speed = DefaulSpeed; // Change speed back to default value after counting is done
         }
     }
-    private void CollectItem(Dictionary<string, object> message)
+    private void CollectItem(Dictionary<string, object> message) // Use collected power up
     {
         var item = (ICollectable) message["item"];
         item.Collect(this);
-    }
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            var obj = Instantiate(Boat, BoatList[^1].transform.position, Quaternion.identity,Child.transform);
-            for (int i = 0; i < BoatList.Count; i++)
-            {
-                BoatList[i].transform.localPosition += Vector3.up * Boat.transform.localScale.y;
-            }
-            //obj.Joint.connectedBody = BoatList[^1].Rb;
-            BoatList.Add(obj);
-        }
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            Destroy(BoatList[^1].gameObject);
-            BoatList.RemoveAt(BoatList.Count-1);
-            for (int i = 0; i < BoatList.Count; i++)
-            {
-                BoatList[i].transform.localPosition -= Vector3.up * Boat.transform.localScale.y;
-            }
-        }
     }
     
     private void OnEnable()

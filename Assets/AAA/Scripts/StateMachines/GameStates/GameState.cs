@@ -12,27 +12,26 @@ public class GameState : IState<GameStateMachine>
     public void Tick()
     {
         var player = _stateMachine.GameManager.Player;
-        if (player.BoatAmount <= 0)
+        if (player.CurrentBoatAmount <= 0)
         {
             _stateMachine.SetState(new GameOverState(_stateMachine));
         }
         player.CharacterMovement();
+        _stateMachine.GameManager.GameUI.TotalScoreText.text = player.TotalScore.ToString("0");
     }
     public void OnStateEnter()
     {
         EventManager.TriggerEvent("OnLevelStart", null);
-        EventManager.StartListening("OnLevelFinish", NextLevel);
+        EventManager.StartListening("OnLevelFinish", FinishLevel);
     }
     public void OnStateExit()
     {
         _stateMachine.GameManager.Player.IsSliding = false;
-        EventManager.StopListening("OnLevelFinish", NextLevel);
+        EventManager.StopListening("OnLevelFinish", FinishLevel);
     }
 
-    private void NextLevel(Dictionary<string,object> message)
+    private void FinishLevel(Dictionary<string,object> message)
     {
-        _stateMachine.GameManager.CurrentLevel++;
-        PlayerPrefs.SetInt("CurrentLevel", _stateMachine.GameManager.CurrentLevel);
         _stateMachine.SetState(new VictoryState(_stateMachine));
     }
 }

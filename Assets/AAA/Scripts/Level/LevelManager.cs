@@ -498,7 +498,7 @@ public class LevelManager : MonoBehaviour
         Gizmos.color = Color.magenta;
         Gizmos.DrawSphere(_currentObstaclePos,0.1f);
         
-        if (!_isCreatingNewLevel)
+        if (!_isCreatingNewLevel && _isLevelExist)
         {
             if (_isObstacleExist)
             {

@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 
-public class OddEvenRangeAttribute : PropertyAttribute 
+// Custom attribute to pick even or odd numbers from slider on inspector
+public class OddEvenRangeAttribute : PropertyAttribute
 {
     public readonly int min, max;
     public readonly bool isEven;

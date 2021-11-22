@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class VictoryState : IState<GameStateMachine>
@@ -24,6 +23,8 @@ public class VictoryState : IState<GameStateMachine>
 
     public void OnStateEnter()
     {
+        var player = _stateMachine.GameManager.Player;
+        player.TotalScore += player.CurrentScore * player.CurrentBoatAmount;
     }
 
     public void OnStateExit()

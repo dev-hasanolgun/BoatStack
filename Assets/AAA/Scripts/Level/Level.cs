@@ -6,15 +6,13 @@ using PathCreation;
 public class Level
 {
     public WaterSlideData SlideData;
-    public BezierPath BezierPath;
+    public BezierPath BezierPath; // Need this data for level editor
     public List<ObstacleData> ObstacleDataList = new List<ObstacleData>();
     public List<ExtraBoatData> ExtraBoatDataList = new List<ExtraBoatData>();
     public List<PointBonusData> PointBonusDataList = new List<PointBonusData>();
     public List<SpeedBonusData> SpeedBonusDataList = new List<SpeedBonusData>();
     public int LevelID;
     public string LevelName;
-
-    private float _cellDiameter;
 
     public Level(WaterSlideData slideData, BezierPath bezierPath, int levelID, string levelName)
     {

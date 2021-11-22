@@ -4,6 +4,6 @@ public class PlayButton : MonoBehaviour
 {
     public void PlayLevel()
     {
-        EventManager.TriggerEvent("OnPlayLevel", null);
+        EventManager.TriggerEvent("OnPlayNextLevel", null);
     }
 }

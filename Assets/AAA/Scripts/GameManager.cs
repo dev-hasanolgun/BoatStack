@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -15,17 +14,20 @@ public class GameManager : MonoBehaviour
     
     public void StartGame() // Create the player and start the game from selected level.
     {
-        var currentLevel = HelperFunctions.ReverseClampToInt(PlayerPrefs.GetInt("CurrentLevel", 0), 0, LevelDatabase.LevelDB.Count-1);
-        var startLevel = currentLevel;
-        var sliderData = LevelDatabase.LevelDB[startLevel].SlideData;
-        var obstacleData = LevelDatabase.LevelDB[startLevel].ObstacleDataList;
-        var extraBoatData = LevelDatabase.LevelDB[startLevel].ExtraBoatDataList;
-        var pointBonusData = LevelDatabase.LevelDB[startLevel].PointBonusDataList;
-        var speedBonusData = LevelDatabase.LevelDB[startLevel].SpeedBonusDataList;
+        // Get and set current level index into the player pref data
+        CurrentLevel = HelperFunctions.ReverseClampToInt(CurrentLevel, 0, LevelDatabase.LevelDB.Count-1);
+        PlayerPrefs.SetInt("CurrentLevelIndex", CurrentLevel);
+        
+        var sliderData = LevelDatabase.LevelDB[CurrentLevel].SlideData;
+        var obstacleData = LevelDatabase.LevelDB[CurrentLevel].ObstacleDataList;
+        var extraBoatData = LevelDatabase.LevelDB[CurrentLevel].ExtraBoatDataList;
+        var pointBonusData = LevelDatabase.LevelDB[CurrentLevel].PointBonusDataList;
+        var speedBonusData = LevelDatabase.LevelDB[CurrentLevel].SpeedBonusDataList;
         
         var rot = Quaternion.LookRotation(sliderData.LocalPoints[1] - sliderData.LocalPoints[0]);
         var dir = sliderData.LocalPoints[^1] - sliderData.LocalPoints[^2];
         
+        // Set player datas
         Player.ResetStats();
         Player.WaterSlideData = sliderData;
         Player.transform.position = sliderData.LocalPoints[0];
@@ -33,6 +35,7 @@ public class GameManager : MonoBehaviour
         Player.transform.rotation = rot;
         Player.Child.transform.rotation = rot;
 
+        // Generate Map and all the objects along with it
         MapGeneration.DisableMapObjects();
         MapGeneration.GenerateMesh(sliderData.LocalPoints,sliderData.LocalNormals,sliderData.Density,sliderData.Width,sliderData.Depth);
         MapGeneration.GenerateObstacles(obstacleData);
@@ -40,10 +43,7 @@ public class GameManager : MonoBehaviour
         MapGeneration.GeneratePointBonus(pointBonusData);
         MapGeneration.GenerateSpeedBoosts(speedBonusData);
         MapGeneration.GenerateEndGamePlatform(EndGamePlatform, sliderData.LocalPoints[^1],dir);
-        
-        CurrentLevel = startLevel;
     }
-
     private void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -58,6 +58,7 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        CurrentLevel = PlayerPrefs.GetInt("CurrentLevelIndex", 0);
         GameStateMachine = new GameStateMachine(this);
         GameStateMachine.SetState(new TutorialState(GameStateMachine));
     }

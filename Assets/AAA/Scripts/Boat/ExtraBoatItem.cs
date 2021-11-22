@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,9 +11,9 @@ public class ExtraBoatItem : MonoBehaviour, ICollectable, IPoolable
         }
     }
 
-    public void Collect(Player player)
+    public void Collect(Player player) // Add boat to the player when extra boat collected
     {
-        player.BoatAmount++;
+        player.CurrentBoatAmount++;
         var boat = PoolManager.Instance.GetObjectFromPool("boatPool", player.Boat);
         boat.transform.position = player.BoatList[^1].transform.position;
         boat.transform.rotation = player.BoatList[^1].transform.rotation;
