@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class VictoryState : IState<GameStateMachine>
@@ -11,19 +12,21 @@ public class VictoryState : IState<GameStateMachine>
     
     public void Tick()
     {
-        if (Input.GetKeyDown(KeyCode.K))
+        var player = _stateMachine.GameManager.Player;
+        player.EndPlatformMovement();
+        
+        var pos = new Vector3(player.EndPoint.x,0,player.EndPoint.z);
+        if (player.transform.position == pos)
         {
-            _stateMachine.SetState(new TutorialState(_stateMachine));
+            _stateMachine.SetState(new LevelEndState(_stateMachine));
         }
     }
 
     public void OnStateEnter()
     {
-        
     }
 
     public void OnStateExit()
     {
-        
     }
 }

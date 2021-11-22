@@ -11,7 +11,7 @@ public class TutorialState : IState<GameStateMachine>
     
     public void Tick()
     {
-        if (Input.GetKeyDown(KeyCode.K))
+        if (Input.GetMouseButtonDown(0))
         {
             _stateMachine.SetState(new GameState(_stateMachine));
         }
@@ -20,10 +20,12 @@ public class TutorialState : IState<GameStateMachine>
     public void OnStateEnter()
     {
         _stateMachine.GameManager.StartGame();
+        _stateMachine.GameManager.GameUI.TutorialUI.gameObject.SetActive(true);
+        _stateMachine.GameManager.GameUI.CurrentLevelText.text = "Level " + (PlayerPrefs.GetInt("CurrentLevel", 0) + 1).ToString("0");
     }
 
     public void OnStateExit()
     {
-        
+        _stateMachine.GameManager.GameUI.TutorialUI.gameObject.SetActive(false);
     }
 }

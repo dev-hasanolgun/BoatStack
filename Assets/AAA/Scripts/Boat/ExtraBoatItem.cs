@@ -17,16 +17,18 @@ public class ExtraBoatItem : MonoBehaviour, ICollectable, IPoolable
         player.BoatAmount++;
         var boat = PoolManager.Instance.GetObjectFromPool("boatPool", player.Boat);
         boat.transform.position = player.BoatList[^1].transform.position;
-        boat.transform.rotation = Quaternion.identity;
+        boat.transform.rotation = player.BoatList[^1].transform.rotation;
         boat.transform.SetParent(player.Child);
         
+        var scale = player.Boat.transform.localScale.y;
+        player.CharacterVisual.transform.localPosition += Vector3.up * scale;
         for (int i = 0; i < player.BoatList.Count; i++)
         {
-            player.BoatList[i].transform.localPosition += Vector3.up * player.Boat.transform.localScale.y;
+            player.BoatList[i].transform.localPosition += Vector3.up * scale;
         }
 
-        player.Collider.height += player.Boat.transform.localScale.y;
-        player.Collider.center += Vector3.up * player.Boat.transform.localScale.y/2f;
+        player.Collider.height += scale;
+        player.Collider.center += Vector3.up * scale/2f;
         //obj.Joint.connectedBody = BoatList[^1].Rb;
         player.BoatList.Add(boat);
         gameObject.SetActive(false);

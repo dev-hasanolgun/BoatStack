@@ -16,7 +16,7 @@ public class GameState : IState<GameStateMachine>
         {
             _stateMachine.SetState(new GameOverState(_stateMachine));
         }
-        player.MoveCharacter();
+        player.CharacterMovement();
     }
     public void OnStateEnter()
     {

@@ -4,16 +4,19 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public GameStateMachine GameStateMachine;
+    public GameUI GameUI;
     public Player Player;
     public LevelDatabase LevelDatabase;
     public MapGeneration MapGeneration;
+    public GameObject EndGamePlatform;
     public int CurrentLevel;
     
     public static GameManager Instance { get; private set; }
     
     public void StartGame() // Create the player and start the game from selected level.
     {
-        var startLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+        var currentLevel = HelperFunctions.ReverseClampToInt(PlayerPrefs.GetInt("CurrentLevel", 0), 0, LevelDatabase.LevelDB.Count-1);
+        var startLevel = currentLevel;
         var sliderData = LevelDatabase.LevelDB[startLevel].SlideData;
         var obstacleData = LevelDatabase.LevelDB[startLevel].ObstacleDataList;
         var extraBoatData = LevelDatabase.LevelDB[startLevel].ExtraBoatDataList;
@@ -21,6 +24,7 @@ public class GameManager : MonoBehaviour
         var speedBonusData = LevelDatabase.LevelDB[startLevel].SpeedBonusDataList;
         
         var rot = Quaternion.LookRotation(sliderData.LocalPoints[1] - sliderData.LocalPoints[0]);
+        var dir = sliderData.LocalPoints[^1] - sliderData.LocalPoints[^2];
         
         Player.ResetStats();
         Player.WaterSlideData = sliderData;
@@ -35,6 +39,7 @@ public class GameManager : MonoBehaviour
         MapGeneration.GenerateExtraBoats(extraBoatData);
         MapGeneration.GeneratePointBonus(pointBonusData);
         MapGeneration.GenerateSpeedBoosts(speedBonusData);
+        MapGeneration.GenerateEndGamePlatform(EndGamePlatform, sliderData.LocalPoints[^1],dir);
         
         CurrentLevel = startLevel;
     }

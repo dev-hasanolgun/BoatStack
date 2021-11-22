@@ -8,8 +8,10 @@ public class Player : MonoBehaviour
     public WaterSlideData WaterSlideData;
     public CapsuleCollider Collider;
     public Transform Child;
+    public Transform CharacterVisual;
     public Boat Boat;
     public List<Boat> BoatList = new List<Boat>();
+    public Vector3 EndPoint;
     public int BoatAmount = 1;
     public int TargetIndex;
     public float CurrentScore;
@@ -17,6 +19,10 @@ public class Player : MonoBehaviour
     public float HorizontalSpeed = 5f;
     public float Offset;
     public bool IsSliding;
+
+    private List<Boat> _tempBoatList = new List<Boat>();
+    private float _finalTimer;
+    private float _mousePosX;
 
     public void ResetStats()
     {
@@ -28,22 +34,24 @@ public class Player : MonoBehaviour
         
         var boat = PoolManager.Instance.GetObjectFromPool("boatPool", Boat);
         boat.transform.position = Child.transform.position;
-        boat.transform.rotation = Quaternion.identity;
+        boat.transform.localRotation = Quaternion.identity;
         boat.transform.SetParent(Child);
         
         BoatList.Add(boat);
         
         Collider.height = Boat.transform.localScale.y;
         Collider.center = Vector3.zero;
-        
+        Child.transform.localRotation = Quaternion.identity;
+        CharacterVisual.transform.localPosition = Vector3.zero + Vector3.up*0.15f;
+        CharacterVisual.transform.localRotation = Quaternion.identity;
+
         BoatAmount = 1;
         TargetIndex = 0;
         Speed = 1f;
-        HorizontalSpeed = 5f;
         Offset = 0f;
         IsSliding = false;
     }
-    public void MoveCharacter()
+    public void CharacterMovement()
     {
         var waypoints = WaterSlideData.LocalPoints;
         var density = WaterSlideData.Density;
@@ -55,17 +63,37 @@ public class Player : MonoBehaviour
         var height = Vector3.up * (vel * depth * 2f);
         var radius = (Mathf.Pow(width+1f, 2f) + 4f * Mathf.Pow(depth, 2f)) / (8f * depth);
         var dir = waypoints[targetIndex] + Vector3.up * radius - Child.transform.position;
-        
-        if (Input.GetKey(KeyCode.LeftArrow))
+        if (Input.GetMouseButtonDown(0))
         {
-            Offset += Time.deltaTime*HorizontalSpeed;
-            Child.transform.position -= Child.transform.right * Time.deltaTime;
+            _mousePosX = Input.mousePosition.x;
         }
-        if (Input.GetKey(KeyCode.RightArrow))
+
+        if (Input.GetMouseButton(0))
         {
-            Offset -= Time.deltaTime*HorizontalSpeed;
-            Child.transform.position += Child.transform.right * Time.deltaTime;
+            if (Input.mousePosition.x < _mousePosX)
+            {
+                _mousePosX = Input.mousePosition.x;
+                Offset += Time.deltaTime*HorizontalSpeed*5f;
+                Child.transform.position -= Child.transform.right * (Time.deltaTime * HorizontalSpeed);
+            }
+
+            if (Input.mousePosition.x > _mousePosX)
+            {
+                _mousePosX = Input.mousePosition.x;
+                Offset -= Time.deltaTime*HorizontalSpeed*5f;
+                Child.transform.position += Child.transform.right * (Time.deltaTime * HorizontalSpeed);
+            }
         }
+        // if (Input.GetKey(KeyCode.LeftArrow))
+        // {
+        //     Offset += Time.deltaTime*HorizontalSpeed;
+        //     Child.transform.position -= Child.transform.right * Time.deltaTime;
+        // }
+        // if (Input.GetKey(KeyCode.RightArrow))
+        // {
+        //     Offset -= Time.deltaTime*HorizontalSpeed;
+        //     Child.transform.position += Child.transform.right * Time.deltaTime;
+        // }
         Child.transform.position = new Vector3(Child.transform.position.x, height.y+0.1f, Child.transform.position.z);
         Child.transform.rotation = Quaternion.LookRotation(Child.transform.forward,dir.normalized);
     }
@@ -106,6 +134,28 @@ public class Player : MonoBehaviour
             yield return null;
         }
     }
+
+    public void EndPlatformMovement()
+    {
+        if (BoatAmount > 0)
+        {
+            transform.position += transform.forward * (Time.deltaTime * Speed);
+        }
+        else
+        {
+            var pos = transform.position;
+            var targetPos = new Vector3(EndPoint.x, pos.y, EndPoint.z);
+            transform.position = Vector3.MoveTowards(pos, targetPos, Time.deltaTime * Speed);
+            if (transform.position == targetPos)
+            {
+                for (int i = 0; i < _tempBoatList.Count; i++)
+                {
+                    _tempBoatList[i].gameObject.SetActive(false);
+                }
+                _tempBoatList.Clear();
+            }
+        }
+    }
     private void TakeDamage(Dictionary<string,object> message)
     {
         var obstacle = (Obstacle) message["obstacle"];
@@ -113,16 +163,59 @@ public class Player : MonoBehaviour
         {
             for (int j = 0; j < obstacle.Damage; j++)
             {
+                var scale = Boat.transform.localScale.y;
+                BoatList[^1].gameObject.SetActive(false);
+                BoatList.RemoveAt(BoatList.Count-1);
+                CharacterVisual.transform.localPosition -= Vector3.up * scale;
+                for (int i = 0; i < BoatList.Count; i++)
+                {
+                    BoatList[i].transform.localPosition -= Vector3.up * scale;
+                }
+                Collider.height -= Boat.transform.localScale.y;
+                Collider.center -= Vector3.up * scale/2f;
+                BoatAmount--;
+            }
+        }
+    }
+
+    private void CountBoat(Dictionary<string,object> message)
+    {
+        EndPoint = (Vector3) message["endPoint"];
+        if (BoatAmount > 0)
+        {
+            var scale = Boat.transform.localScale.y;
+            BoatList[^1].gameObject.transform.SetParent(null);
+            _tempBoatList.Add(BoatList[^1]);
+            BoatList.RemoveAt(BoatList.Count-1);
+            BoatAmount--;
+        }
+    }
+
+    private void CountRemainingBoats(Dictionary<string, object> message)
+    {
+        EndPoint = (Vector3) message["endPoint"];
+        if (BoatAmount > 0)
+        {
+            _finalTimer += Time.deltaTime;
+            Speed = 0f;
+            
+            if (_finalTimer > 0.3f)
+            {
+                var scale = Boat.transform.localScale.y;
                 BoatList[^1].gameObject.SetActive(false);
                 BoatList.RemoveAt(BoatList.Count-1);
                 for (int i = 0; i < BoatList.Count; i++)
                 {
-                    BoatList[i].transform.localPosition -= Vector3.up * Boat.transform.localScale.y;
+                    BoatList[i].transform.localPosition -= Vector3.up * scale;
                 }
+                CharacterVisual.transform.localPosition -= Vector3.up * scale;
+                BoatAmount--;
+                _finalTimer = 0f;
             }
-            Collider.height -= Boat.transform.localScale.y;
-            Collider.center -= Vector3.up * Boat.transform.localScale.y/2f;
-            BoatAmount -= obstacle.Damage;
+        }
+        else
+        {
+            Speed = 1;
         }
     }
     private void CollectItem(Dictionary<string, object> message)
@@ -158,11 +251,15 @@ public class Player : MonoBehaviour
         EventManager.StartListening("OnLevelStart", StartSliding);
         EventManager.StartListening("OnBlocked", TakeDamage);
         EventManager.StartListening("OnCollect", CollectItem);
+        EventManager.StartListening("OnEndPlatform", CountBoat);
+        EventManager.StartListening("OnLastPlatform", CountRemainingBoats);
     }
     private void OnDisable()
     {
         EventManager.StopListening("OnLevelStart", StartSliding);
         EventManager.StopListening("OnBlocked", TakeDamage);
         EventManager.StopListening("OnCollect", CollectItem);
+        EventManager.StopListening("OnEndPlatform", CountBoat);
+        EventManager.StopListening("OnLastPlatform", CountRemainingBoats);
     }
 }

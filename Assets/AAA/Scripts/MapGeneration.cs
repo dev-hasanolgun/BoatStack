@@ -10,7 +10,7 @@ public class MapGeneration : MonoBehaviour
     
     public void GenerateMesh(Vector3[] positions, Vector3[] pathNormals, int Density, float Width, float Depth)
     {
-        var mesh = MeshFilter.mesh;
+        var mesh = new Mesh();
         var posAmount = positions.Length;
         
         var vertices = new Vector3[posAmount*Density];
@@ -65,6 +65,7 @@ public class MapGeneration : MonoBehaviour
         mesh.triangles = tris;
         
         mesh.RecalculateNormals();
+        MeshFilter.mesh = mesh;
     }
 
     public void GenerateObstacles(List<ObstacleData> obstacleDataList)
@@ -111,7 +112,12 @@ public class MapGeneration : MonoBehaviour
             _objectList.Add(speedItem.gameObject);
         }
     }
-
+    public void GenerateEndGamePlatform(GameObject endGame, Vector3 position, Vector3 direction)
+    {
+        endGame.transform.position = position;
+        direction = Quaternion.AngleAxis(-90f, Vector3.up) * direction;
+        endGame.transform.rotation = Quaternion.LookRotation(direction);
+    }
     public void DisableMapObjects()
     {
         for (int i = 0; i < _objectList.Count; i++)

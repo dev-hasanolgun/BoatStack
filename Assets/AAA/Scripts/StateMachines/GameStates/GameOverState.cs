@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public class GameOverState : IState<GameStateMachine>
 {
     private GameStateMachine _stateMachine;
@@ -12,10 +14,16 @@ public class GameOverState : IState<GameStateMachine>
 
     public void OnStateEnter()
     {
-        _stateMachine.SetState(new TutorialState(_stateMachine));
+        EventManager.StartListening("OnRestartLevel", RestartLevel);
+        _stateMachine.GameManager.GameUI.RestartButton.gameObject.SetActive(true);
     }
 
     public void OnStateExit()
     {
+        _stateMachine.GameManager.GameUI.RestartButton.gameObject.SetActive(false);
+    }
+    private void RestartLevel(Dictionary<string, object> message)
+    {
+        _stateMachine.SetState(new TutorialState(_stateMachine));
     }
 }
